@@ -1,0 +1,387 @@
+{% include 'user/user_header.html' %}
+{% load static %}
+
+<head>
+    
+    <style>
+        body {
+            background-color: #282c34;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container-fluid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .content-box {
+            background: #191C24;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 80%;
+            max-width: 1200px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #ffcccc;
+            margin-bottom: 20px;
+        }
+
+        h5 {
+            color: #ff9999;
+            margin-bottom: 30px;
+        }
+
+        .form-control {
+            background-color: #b30000;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            box-shadow: 0 0 5px #ff9999;
+        }
+
+        .btn {
+            background-color: #ff4d4d;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #ff6666;
+        }
+
+        #summary-text {
+            text-align: justify;
+            background: #000;
+            padding: 20px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            color: #fff;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        #translated-summary{
+            text-align: justify;
+            background: #000;
+            padding: 20px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            color: #fff;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .copy-section {
+            margin-top: 10px;
+            margin-left: 4px;
+            display: flex;
+            /* justify-content: center; */
+            align-items: center;
+        }
+
+        .copy-section i {
+            cursor: pointer;
+            color: #ffcccc;
+            font-size: 20px;
+            margin-right: 5px;
+        }
+
+        .copy-section span {
+            color: #ff9999;
+        }
+
+        .copy-section .spacer {
+            margin-left: 20px; /* Adjust spacing as needed */
+        }
+
+        .language-select select {
+            background-color: #000;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        #file-viewer{
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .content-box {
+                width: 90%;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+<body>
+
+    <div class="container-fluid">
+        <div class="content-box">
+            <h1>Get your summaries</h1>
+            <h5>Upload your file <i class="fa-solid fa-file-import"></i></h5>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <input type="file" name="input_file" id="input_file" accept="application/pdf, image/*" required class="form-control">
+                </div>
+                <button type="submit" class="btn">Summarize</button>
+            </form>
+            <br>
+            {% if summarized_text %}
+                <h4 style="color: #ffcccc;">Summary:</h4>
+                <div id="summary-text"></div>
+                <div class="copy-section">
+                    <i id="copy-btn" class="fas fa-copy" onclick="copyToClipboard()" title="Copy"></i>
+                    <span>Copy</span>
+                    <span class="spacer"></span>
+                    <!-- <i class="fa-solid fa-expand" onclick="viewUploadedFile('/static/media/{{uploaded_file_url.file}}')" title="View File"></i> -->
+                    <i class="fa-solid fa-expand" onclick="viewUploadedFile('/static/media/{{ uploaded_file_url }}')" title="View File"></i>
+                    <span>View file</span>
+                    <span class="spacer"></span>
+                    <!-- <span>Translate</span> -->
+                    <div id="downloadBtn" style="cursor: pointer; display: flex; align-items: center;">
+                        <i class="fa-regular fa-circle-down"></i>
+                        <span style="margin-left: 5px;">Download</span>
+                    </div>
+                </div>
+                <div id="file-viewer"></div>
+                <br>
+                <div class="language-select">
+                    <label for="language">Select Language:</label>
+                    <select id="language" class="language-select" style="width: 300px;">
+                        <option value="af">Afrikaans</option>
+                        <option value="sq">Albanian</option>
+                        <option value="am">Amharic</option>
+                        <option value="ar">Arabic</option>
+                        <option value="hy">Armenian</option>
+                        <option value="az">Azerbaijani</option>
+                        <option value="eu">Basque</option>
+                        <option value="be">Belarusian</option>
+                        <option value="bn">Bengali</option>
+                        <option value="bs">Bosnian</option>
+                        <option value="bg">Bulgarian</option>
+                        <option value="ca">Catalan</option>
+                        <option value="ceb">Cebuano</option>
+                        <option value="zh-CN">Chinese (Simplified)</option>
+                        <option value="zh-TW">Chinese (Traditional)</option>
+                        <option value="co">Corsican</option>
+                        <option value="hr">Croatian</option>
+                        <option value="cs">Czech</option>
+                        <option value="da">Danish</option>
+                        <option value="nl">Dutch</option>
+                        <option value="en">English</option>
+                        <option value="eo">Esperanto</option>
+                        <option value="et">Estonian</option>
+                        <option value="fi">Finnish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="el">Greek</option>
+                        <option value="gu">Gujarati</option>
+                        <option value="hi">Hindi</option>
+                        <option value="hu">Hungarian</option>
+                        <option value="is">Icelandic</option>
+                        <option value="id">Indonesian</option>
+                        <option value="it">Italian</option>
+                        <option value="ja">Japanese</option>
+                        <option value="kn">Kannada</option>
+                        <option value="ko">Korean</option>
+                        <option value="ml">Malayalam</option>
+                        <option value="mr">Marathi</option>
+                        <option value="ne">Nepali</option>
+                        <option value="no">Norwegian</option>
+                        <option value="pa">Punjabi</option>
+                        <option value="pl">Polish</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="ru">Russian</option>
+                        <option value="si">Sinhala</option>
+                        <option value="es">Spanish</option>
+                        <option value="sv">Swedish</option>
+                        <option value="ta">Tamil</option>
+                        <option value="te">Telugu</option>
+                        <option value="th">Thai</option>
+                        <option value="tr">Turkish</option>
+                        <option value="uk">Ukrainian</option>
+                        <option value="ur">Urdu</option>
+                        <option value="vi">Vietnamese</option>
+                        <option value="zh">Chinese</option>
+                    </select>
+                    <button class="btn" onclick="translateSummary()"><i class="fa-solid fa-language"></i> Translate</button>
+                </div>
+                <h4 style="color: #EB1616; margin-top: 20px;">Translated Summary:</h4>
+                <div id="translated-summary">- Translation will appear here -</div>
+                <div class="copy-section">
+                    <i id="copy-btn" class="fas fa-copy" onclick="copyToClipboard()" title="Copy"></i>
+                    <span>Copy</span>
+                    <span class="spacer"></span>
+                    <!-- <i class="fa-solid fa-expand" onclick="viewUploadedFile('/static/media/{{uploaded_file_url.file}}')" title="View File"></i> -->
+                    <!-- <i class="fa-solid fa-expand" onclick="viewUploadedFile('/static/media/{{ uploaded_file_url }}')" title="View File"></i>
+                    <span>View file</span> -->
+                    <!-- <span class="spacer"></span> -->
+                    <!-- <span>Translate</span> -->
+                    <div id="downloadBtn" style="cursor: pointer; display: flex; align-items: center;">
+                        <i class="fa-regular fa-circle-down"></i>
+                        <span style="margin-left: 5px;">Download</span>
+                    </div>
+                </div>
+                <span class="spacer"></span>
+            {% else %}
+                <h5 style="color: #ffcccc;">- No summary available -</h5>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+
+function viewUploadedFile(fileUrl) {
+    const fileViewer = document.getElementById('file-viewer');
+
+    if (!fileUrl) {
+        alert('No file available to view!');
+        return;
+    }
+
+    const fileExtension = fileUrl.split('.').pop().toLowerCase();
+
+    let viewerContent = '';
+
+    if (fileExtension === 'pdf') {
+        // If it's a PDF, embed it in an iframe
+        viewerContent = `<iframe src="${fileUrl}" frameborder="0" width="100%" height="500px" style="border:1px solid #ccc; border-radius:5px;"></iframe>`;
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(fileExtension)) {
+        // If it's an image, display the image
+        viewerContent = `<img src="${fileUrl}" alt="Uploaded file" width="100%" style="max-width:100%; height:auto;">`;
+    } else {
+        alert('Unsupported file format for viewing!');
+        return;
+    }
+
+    fileViewer.innerHTML = viewerContent;
+}
+
+        const summarizedText = `{{ summarized_text|escapejs }}`;
+        const summaryElement = document.getElementById('summary-text');
+
+        if (summarizedText) {
+            typeWriterEffect(summarizedText, summaryElement);
+        }
+
+        function typeWriterEffect(text, element) {
+            let i = 0;
+            const speed = 20; // Typing speed in milliseconds
+            text = text.replace(/\s+/g, ' ').trim(); // Remove extra spaces
+
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else {
+                    element.style.textAlign = "justify"; // Justify final text
+                }
+            }
+
+            type();
+        }
+
+        function copyToClipboard() {
+            const summaryText = document.getElementById('summary-text').innerText;
+            navigator.clipboard.writeText(summaryText).then(() => {
+                alert('Summary copied to clipboard!');
+            }).catch(err => {
+                alert('Failed to copy text: ', err);
+            });
+        }
+
+        function viewUploadedFile(fileUrl) {
+            const fileViewer = document.getElementById('file-viewer');
+
+            if (!fileUrl) {
+                alert('No file available to view!');
+                return;
+            }
+
+            const iframe = document.createElement('iframe');
+            iframe.src = fileUrl;
+            iframe.frameBorder = "0";
+            iframe.width = "100%";
+            iframe.height = "500px";
+            iframe.style.border = "1px solid #ccc";
+            iframe.style.borderRadius = "5px";
+
+            fileViewer.innerHTML = ''; // Clear previous content
+            fileViewer.appendChild(iframe);
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.language-select').select2({
+                placeholder: "Select a language",
+                allowClear: true
+            });
+        });
+    </script>
+    <script>
+        function downloadSummary() {
+            // Get the summarized text (replace this with actual summary)
+            let summary = document.getElementById("summary-text").innerText; 
+            
+            if (!summary.trim()) {
+                alert("No summary available to download!");
+                return;
+            }
+    
+            // Create a Blob object
+            let blob = new Blob([summary], { type: "text/plain" });
+    
+            // Create a temporary anchor element
+            let a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "summary.txt"; // File name
+    
+            // Trigger the download
+            document.body.appendChild(a);
+            a.click();
+    
+            // Clean up
+            document.body.removeChild(a);
+        }
+    
+        // Attach event listener to the div (instead of <i>)
+        document.getElementById("downloadBtn").addEventListener("click", downloadSummary);
+    </script>      
+</body>
+
+{% include 'user/user_footer.html' %}
